@@ -4,7 +4,8 @@ import com.example.mscourier.dao.entity.Courier;
 import com.example.mscourier.dao.repository.CourierRepository;
 import com.example.mscourier.dto.CourierCreateRequest;
 import com.example.mscourier.dto.CourierResponse;
-import com.example.mscourier.mapper.CourierMapper;
+import com.example.mscourier.enums.CourierStatus;
+import com.example.mscourier.exceptions.CourierNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,9 @@ public class CourierService {
     }
 
     public CourierResponse getCourierById(Long id) {
-        return toResponse(courierRepository.findById(id).orElse(null));
+        return courierRepository.findById(id)
+                .map(c -> toResponse(c))
+                .orElseThrow(() -> new CourierNotFoundException(id));
     }
 
     public List<CourierResponse> findAvailableCouriers() {
@@ -40,5 +43,17 @@ public class CourierService {
     public void createCourier(CourierCreateRequest courierCreateRequest) {
         Courier courier = toEntity(courierCreateRequest);
         courierRepository.save(courier);
+    }
+
+    public void updateCourierStatus(Long id, CourierStatus status) {
+        var courier = fetchCourierIfExists(id);
+
+        courier.setStatus(status);
+        courierRepository.save(courier);
+    }
+
+    private Courier fetchCourierIfExists(Long id) {
+        return courierRepository.findById(id)
+                .orElseThrow(() -> new CourierNotFoundException(id));
     }
 }

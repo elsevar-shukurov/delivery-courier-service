@@ -3,8 +3,14 @@ package com.example.mscourier.dao.entity;
 import com.example.mscourier.enums.CourierStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+
+import static com.example.mscourier.enums.CourierStatus.FREE;
+import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Getter
 @Setter
@@ -15,26 +21,18 @@ import java.time.LocalDateTime;
 @Table(name="couriers")
 public class Courier {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     private String name;
 
     @Builder.Default
-    @Enumerated(EnumType.STRING)
-    private CourierStatus status = CourierStatus.FREE;
+    @Enumerated(STRING)
+    private CourierStatus status = FREE;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }
