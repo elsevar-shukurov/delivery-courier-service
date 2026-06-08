@@ -23,8 +23,8 @@ public class CourierController {
 
 
     @GetMapping
-    public Page<CourierResponseDto> getOrders(PageCriteria pageCriteria, CourierCriteria orderCriteria) {
-        return courierService.getOrders(orderCriteria, pageCriteria);
+    public Page<CourierResponseDto> getCouriers(PageCriteria pageCriteria, CourierCriteria orderCriteria) {
+        return courierService.getCouriers(orderCriteria, pageCriteria);
     }
 
     @GetMapping("/{id}")

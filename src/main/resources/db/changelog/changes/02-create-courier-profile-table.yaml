@@ -30,10 +30,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: phone
-                  type: VARCHAR(20)
+                  name: phone_number
+                  type: VARCHAR(15)
                   constraints:
                     nullable: false
+                    unique: true
               - column:
                   name: vehicle_type
                   type: VARCHAR(50)
@@ -41,7 +42,7 @@ databaseChangeLog:
                     nullable: true
               - column:
                   name: license_plate
-                  type: VARCHAR(20)
+                  type: VARCHAR(10)
                   constraints:
                     nullable: true
               - column:

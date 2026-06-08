@@ -1,13 +1,16 @@
 package com.example.mscourier.dao.entity;
 
+import com.example.mscourier.enums.VehicleType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+
+import static jakarta.persistence.EnumType.STRING;
 
 @Entity
 @Table(name = "courier_profile")
@@ -26,20 +29,19 @@ public class CourierProfile {
     @JoinColumn(name = "courier_id", nullable = false, unique = true)
     private Courier courier;
 
-    @NotBlank(message = "Name cannot be blank")
     @Column(nullable = false)
     private String name;
 
-    @NotBlank(message = "Surname cannot be blank")
     @Column(nullable = false)
     private String surname;
 
-    @NotBlank(message = "Phone cannot be blank")
-    @Column(nullable = false)
-    private String phone;
+    @Column(name = "phone_number", nullable = false, unique = true)
+    private String phoneNumber;
 
     @Column(name = "vehicle_type")
-    private String vehicleType;
+    @Enumerated(STRING)
+    private VehicleType vehicleType;
+
 
     @Column(name = "license_plate")
     private String licensePlate;
