@@ -1,10 +1,13 @@
 package com.example.mscourier.controller;
 
-import com.example.mscourier.dto.CourierCreateRequest;
-import com.example.mscourier.dto.CourierResponse;
-import com.example.mscourier.enums.CourierStatus;
+import com.example.mscourier.criteria.CourierCriteria;
+import com.example.mscourier.criteria.PageCriteria;
+import com.example.mscourier.dto.CourierCreateRequestDto;
+import com.example.mscourier.dto.CourierResponseDto;
 import com.example.mscourier.service.CourierService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,30 +18,29 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RequiredArgsConstructor
 @RequestMapping("/couriers")
 public class CourierController {
+
     private final CourierService courierService;
 
 
     @GetMapping
-    public List<CourierResponse> getAllCouriers() {
-        return courierService.getAllCouriers();
+    public Page<CourierResponseDto> getOrders(PageCriteria pageCriteria, CourierCriteria orderCriteria) {
+        return courierService.getOrders(orderCriteria, pageCriteria);
     }
+
     @GetMapping("/{id}")
-    public CourierResponse getCourierById(@PathVariable Long id){
+    public CourierResponseDto getCourierById(@PathVariable Long id) {
         return courierService.getCourierById(id);
     }
 
     @GetMapping("/available")
-    public List<CourierResponse> getAvailableCouriers() {
+    public List<CourierResponseDto> getAvailableCouriers() {
         return courierService.findAvailableCouriers();
     }
-    @PutMapping("/{id}/status")
-    public void updateCourierStatus(@PathVariable Long id, @RequestParam CourierStatus status){
-        courierService.updateCourierStatus(id, status);
-    }
+
 
     @PostMapping
     @ResponseStatus(CREATED)
-    public void createCourier(@RequestBody CourierCreateRequest courierCreateRequest) {
-        courierService.createCourier(courierCreateRequest);
+    public CourierResponseDto createCourier(@Valid @RequestBody CourierCreateRequestDto request) {
+        return courierService.createCourier(request);
     }
 }

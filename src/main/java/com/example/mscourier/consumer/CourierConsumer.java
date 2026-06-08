@@ -23,7 +23,7 @@ public class CourierConsumer {
     public void handleOrderAssigned(String message) {
         log.info("CourierConsumer.handleOrderAssigned.start message: {}", message);
         var event = objectMapper.readValue(message, OrderAssignedEvent.class);
-        courierService.updateCourierStatus(event.getCourierId(), BUSY);
+        courierService.markCourierBusy(event.getCourierId());
         log.info("CourierConsumer.handleOrderAssigned.end");
     }
 }
