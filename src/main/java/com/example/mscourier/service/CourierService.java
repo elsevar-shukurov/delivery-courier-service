@@ -7,19 +7,19 @@ import com.example.mscourier.dao.entity.Courier;
 import com.example.mscourier.dao.repository.CourierRepository;
 import com.example.mscourier.dto.CourierCreateRequestDto;
 import com.example.mscourier.dto.CourierResponseDto;
-import com.example.mscourier.enums.CourierStatus;
 import com.example.mscourier.exceptions.CourierNotFoundException;
+import com.example.mscourier.mapper.CourierMapper;
 import com.example.mscourier.specification.CourierSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.example.mscourier.enums.CourierStatus.BUSY;
 import static com.example.mscourier.enums.CourierStatus.FREE;
-import static com.example.mscourier.mapper.CourierMapper.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,70 +27,60 @@ import static com.example.mscourier.mapper.CourierMapper.*;
 public class CourierService {
 
     private final CourierRepository courierRepository;
+    private final CourierMapper courierMapper;
 
-    public List<CourierResponseDto> getAllCouriers() {
-        return courierRepository.findAllWithProfile().stream()
-                .map(c->toResponse(c))
-                .toList();
-    }
+    public Page<CourierResponseDto> getCouriers(CourierCriteria orderCriteria, PageCriteria pageCriteria) {
 
-    public Page<CourierResponseDto> getOrders(CourierCriteria courierCriteria, PageCriteria pageCriteria) {
-        PageRequest pageable = PageRequest.of(pageCriteria.getPageNumber(), pageCriteria.getCount());
-
-        var courierPage = courierRepository.findAll(
-                new CourierSpecification(courierCriteria),
-                pageable
+        PageRequest pageable = PageRequest.of(
+                pageCriteria.getPageNumber(),
+                pageCriteria.getCount(),
+                Sort.by(Sort.Direction.fromString(pageCriteria.getSortDirection().toUpperCase()), pageCriteria.getSortBy())
         );
 
-        return courierPage.map(o ->toResponse(o));
+        return courierRepository.findAll(new CourierSpecification(orderCriteria), pageable)
+                .map(o-> courierMapper.toResponse(o));
     }
 
     public CourierResponseDto getCourierById(Long id) {
-        return toResponse(fetchCourierIfExists(id));
+        return courierMapper.toResponse(fetchCourierWithProfile(id));
     }
 
     public List<CourierResponseDto> findAvailableCouriers() {
         return courierRepository.findAllByStatusWithProfile(FREE).stream()
-                .map(c->toResponse(c))
+                .map(c->courierMapper.toResponse(c))
                 .toList();
     }
 
-    @Transactional
     public CourierResponseDto createCourier(CourierCreateRequestDto request) {
-        var courier = createCourierEntity();
-        var profile = toProfileEntity(request);
-        profile.setCourier(courier);
-        courier.setProfile(profile);
+        var courier = courierMapper.createCourierWithProfile(request);
         courierRepository.save(courier);
-
-        return toResponse(courier);
+        return courierMapper.toResponse(courier);
     }
 
-    @Transactional
     public void markCourierBusy(Long courierId) {
-        var courier = fetchCourierIfExists(courierId);
-        if (courier.getStatus() == CourierStatus.BUSY) {
+        var courier = fetchCourierById(courierId);
+        if (BUSY.equals(courier.getStatus())) {
             throw new IllegalStateException("Courier is already busy");
         }
-        courier.setStatus(CourierStatus.BUSY);
+        courier.setStatus(BUSY);
         courierRepository.save(courier);
     }
 
-    @Transactional
     public void markCourierFree(Long courierId) {
-        var courier = fetchCourierIfExists(courierId);
-        if (courier.getStatus() == FREE) {
+        var courier = fetchCourierById(courierId);
+        if (FREE.equals(courier.getStatus())) {
             throw new IllegalStateException("Courier is already free");
         }
         courier.setStatus(FREE);
         courierRepository.save(courier);
     }
 
-    private Courier fetchCourierIfExists(Long id) {
-        var courier = courierRepository.findByIdWithProfile(id);
-        if (courier.isEmpty()) {
-            throw new CourierNotFoundException(id);
-        }
-        return courier.get();
+    private Courier fetchCourierById(Long id) {
+        return courierRepository.findByIdWithProfile(id)
+                .orElseThrow(() -> new CourierNotFoundException(id));
+    }
+    private Courier fetchCourierWithProfile(Long id) {
+        return courierRepository.findByIdWithProfile(id)
+                .orElseThrow(() -> new CourierNotFoundException(id));
     }
 }

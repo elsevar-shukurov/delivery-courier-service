@@ -4,41 +4,26 @@ import com.example.mscourier.dao.entity.Courier;
 import com.example.mscourier.dao.entity.CourierProfile;
 import com.example.mscourier.dto.CourierCreateRequestDto;
 import com.example.mscourier.dto.CourierResponseDto;
-import com.example.mscourier.enums.CourierStatus;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-public class CourierMapper {
+@Mapper(componentModel = "spring")
+public interface CourierMapper {
 
-    public static Courier createCourierEntity() {
-        return Courier.builder()
-                .status(CourierStatus.FREE)
-                .build();
-    }
+    CourierProfile toProfileEntity(CourierCreateRequestDto request);
 
-    public static CourierProfile toProfileEntity(CourierCreateRequestDto request) {
-        return CourierProfile.builder()
-                .name(request.getName())
-                .surname(request.getSurname())
-                .phone(request.getPhone())
-                .vehicleType(request.getVehicleType())
-                .licensePlate(request.getLicensePlate())
-                .build();
-    }
+    @Mapping(source = "profile.name", target = "name")
+    @Mapping(source = "profile.surname", target = "surname")
+    @Mapping(source = "profile.phoneNumber", target = "phoneNumber")
+    @Mapping(source = "profile.vehicleType", target = "vehicleType")
+    @Mapping(source = "profile.licensePlate", target = "licensePlate")
+    CourierResponseDto toResponse(Courier courier);
 
-    public static CourierResponseDto toResponse(Courier courier) {
-        CourierProfile profile = courier.getProfile();
-        if (profile == null) {
-            throw new IllegalStateException("Courier profile not found for id: " + courier.getId());
-        }
-        return CourierResponseDto.builder()
-                .id(courier.getId())
-                .status(courier.getStatus())
-                .name(profile.getName())
-                .surname(profile.getSurname())
-                .phone(profile.getPhone())
-                .vehicleType(profile.getVehicleType())
-                .licensePlate(profile.getLicensePlate())
-                .createdAt(courier.getCreatedAt())
-                .updatedAt(courier.getUpdatedAt())
-                .build();
+    default Courier createCourierWithProfile(CourierCreateRequestDto request) {
+        var courier = Courier.builder().build();
+        var profile = toProfileEntity(request);
+        profile.setCourier(courier);
+        courier.setProfile(profile);
+        return courier;
     }
 }

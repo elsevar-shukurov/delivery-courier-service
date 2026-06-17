@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 import static com.example.mscourier.enums.CourierStatus.FREE;
 import static jakarta.persistence.EnumType.STRING;
-import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Table(name = "couriers")
@@ -26,10 +25,10 @@ public class Courier {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Status cannot be null")
-    @Enumerated(EnumType.STRING)
+    @Enumerated(STRING)
     @Column(nullable = false)
-    private CourierStatus status;
+    @Builder.Default
+    private CourierStatus status= FREE;
 
     @CreationTimestamp
     @Column(updatable = false)

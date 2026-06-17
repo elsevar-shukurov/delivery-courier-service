@@ -2,6 +2,7 @@ package com.example.mscourier.dto;
 
 
 import com.example.mscourier.enums.CourierStatus;
+import com.example.mscourier.enums.VehicleType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -21,8 +22,8 @@ public class CourierResponseDto {
     private CourierStatus status;
     private String name;
     private String surname;
-    private String phone;
-    private String vehicleType;
+    private String phoneNumber;
+    private VehicleType vehicleType;
     private String licensePlate;
 
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
